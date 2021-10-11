@@ -53,14 +53,13 @@ void step(boolean dir, byte dirPin, byte stepperPin, int steps)
 
 void setup(){
 
+  Serial.begin(9600);
+
   pinMode(X_DIR, OUTPUT); pinMode(X_STP, OUTPUT);
-
   pinMode(Y_DIR, OUTPUT); pinMode(Y_STP, OUTPUT);
-
   pinMode(Z_DIR, OUTPUT); pinMode(Z_STP, OUTPUT);
 
   pinMode(EN, OUTPUT);
-
   digitalWrite(EN, LOW);
 
 }
