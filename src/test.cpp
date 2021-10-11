@@ -96,61 +96,19 @@ void setup(){
 
 void loop() {
 
-
   // float angleCommand = 0.;
 
   for (int i = 0; i < 200; i ++) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 120, 100);
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100);
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
     delay(1000);
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  for (int i = 0; i < 200; i ++) {
-    // stepAngle (false, X_DIR, X_STP, 360, 20000);  // 10 steps
-    // stepAngle (false, X_DIR, X_STP, 1.8, 500);  // full step
-    // stepAngle (false, X_DIR, X_STP, 0.9, 200);  // 1/2 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.45, 100);  // 1/4 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.225, 100);  // 1/8 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.1125, 100);  // 1/16 microstep >> resolution = 0.1125deg
-    // stepAngle (false, X_DIR, X_STP, 0.05625, 100);  // 1/32 microstep (not possible)
-
-    // Serial.print ("Angle: ");
-    // Serial.print (absoluteAngle);
-    // Serial.println (" deg");
-
-    // delay(500);
-  }
-
   delay (3000);
-  
-  
-  
-
-  // step(false, X_DIR, X_STP, stps/4); //X, Clockwise
-  // step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
-  // step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
-
-  // delay(100);
-
-  // step(true, X_DIR, X_STP, stps*4); //X, Counterclockwise
-  // step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
-  // step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
-
-  // delay(100);
-  
 
 }
+
+
+// Stepping 119.981246 deg / 120.000000 deg.
+
