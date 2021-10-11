@@ -9,47 +9,64 @@
 // $Id: MultiStepper.pde,v 1.1 2011/01/05 01:51:01 mikem Exp mikem $
 
 #include <AccelStepper.h>
+#include <math.h>
 
 // Define some steppers and the pins the will use
-#define EN        8  
+#define EN          8  
 
 //Direction pin
-#define X_DIR     5 
-#define Y_DIR     6
-#define Z_DIR     7
+#define X_DIR       5 
+#define Y_DIR       6
+#define Z_DIR       7
 
-//Step pin
-#define X_STP     2
-#define Y_STP     3 
-#define Z_STP     4 
+// Step pin
+#define X_STP       2
+#define Y_STP       3 
+#define Z_STP       4 
+
+#define STEPS_FULL  6400  // Number of microsteps in a full rotation
+
+// speed
+#define DELAY_TIME  1000  // Delay between each pause (uS) in  one microstep unit — the lower the smoother
+
+float absoluteAngle = 0.;
 
 
-//DRV8825
-int delayTime=15; //Delay between each pause (uS) in  one microstep unit the lower the smoother
-//int stps=6400;// Steps to move, the bigger the smoother
-int stps=96000/delayTime;// Steps to move, the bigger the smoother
+void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) {
 
-
-void step(boolean dir, byte dirPin, byte stepperPin, int steps)
-{
-
+  // Set rotation direction
   digitalWrite(dirPin, dir);
 
-  delay(100);
-
   for (int i = 0; i < steps; i++) {
-    // one micro step unit = 1/32 step (1.8 degree)
-    digitalWrite(stepperPin, HIGH);
 
+    // Run one microstep unit
+    digitalWrite(stepperPin, HIGH);
     delayMicroseconds(delayTime); 
 
     digitalWrite(stepperPin, LOW);
-
     delayMicroseconds(delayTime); 
 
   }
-
 }
+
+
+void stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
+
+  // Serial.print ("Stepping ");
+  // Serial.print (angleDeg);
+  // Serial.println (" deg");
+
+
+  if (dir == false) {
+    absoluteAngle += 1. * angleDeg;
+  } else if (dir == true) {
+    absoluteAngle += -1. * angleDeg;
+  };
+
+  int steps = round (angleDeg / 360 * STEPS_FULL);
+  step (dir, dirPin, stepperPin, steps, delayTime);
+}
+
 
 void setup(){
 
@@ -64,18 +81,43 @@ void setup(){
 
 }
 
-void loop(){
+void loop() {
 
-  step(false, X_DIR, X_STP, stps/4); //X, Clockwise
-  step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
-  step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
+  // stepAngle(false, X_DIR, X_STP, 90., 500); delay(2000); stepAngle(true, X_DIR, X_STP, 90., 500); delay(2000);
 
-  delay(100);
 
-  step(true, X_DIR, X_STP, stps); //X, Counterclockwise
-  step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
-  step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
+  for (int i = 0; i < 200; i ++) {
+    // stepAngle (false, X_DIR, X_STP, 360, 20000);  // 10 steps
+    // stepAngle (false, X_DIR, X_STP, 1.8, 500);  // full step
+    // stepAngle (false, X_DIR, X_STP, 0.9, 200);  // 1/2 microstep
+    // stepAngle (false, X_DIR, X_STP, 0.45, 100);  // 1/4 microstep
+    // stepAngle (false, X_DIR, X_STP, 0.225, 100);  // 1/8 microstep
+    // stepAngle (false, X_DIR, X_STP, 0.1125, 100);  // 1/16 microstep >> resolution = 0.1125deg
+    // stepAngle (false, X_DIR, X_STP, 0.05625, 100);  // 1/32 microstep (not possible)
 
-  delay(100);
+    Serial.print ("Angle: ");
+    Serial.print (absoluteAngle);
+    Serial.println (" deg");
+
+    delay(500);
+  }
+
+  delay (3000);
+  
+  
+  
+
+  // step(false, X_DIR, X_STP, stps/4); //X, Clockwise
+  // step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
+  // step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
+
+  // delay(100);
+
+  // step(true, X_DIR, X_STP, stps*4); //X, Counterclockwise
+  // step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
+  // step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
+
+  // delay(100);
+  
 
 }
