@@ -50,7 +50,7 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
 
 float fitToSteps (float angleDeg) {
 
-  int angleInt = round (angleDeg * 100000);
+  int64_t angleInt = round (angleDeg * 100000);
   float remainder = angleInt % 5625; // minimum angle (1/32), * 100000
 
   float angleFit = (angleInt - remainder) / 100000;
@@ -62,7 +62,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
-  Serial.print("Stepping "); Serial.print(angleFit); Serial.print(" deg / "); Serial.print(angleDeg); Serial.println(" deg.");
+  Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
 
   // Step command
   int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed
@@ -100,9 +100,10 @@ void loop() {
   // float angleCommand = 0.;
 
   for (int i = 0; i < 200; i ++) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 10, 100);
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 120, 100);
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
+    delay(1000);
   }
 
 
