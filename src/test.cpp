@@ -67,16 +67,16 @@ void setup(){
 
 void loop(){
 
-  step(false, X_DIR, X_STP, stps/4); //X, Clockwise
-  step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
-  step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
+//   step(false, X_DIR, X_STP, stps/4); //X, Clockwise
+//   step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
+//   step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
 
-  delay(100);
+//   delay(100);
 
-  step(true, X_DIR, X_STP, stps); //X, Counterclockwise
-  step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
-  step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
+//   step(true, X_DIR, X_STP, stps); //X, Counterclockwise
+//   step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
+//   step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
 
-  delay(100);
+//   delay(100);
 
 }
