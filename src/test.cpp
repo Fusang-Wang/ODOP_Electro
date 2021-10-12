@@ -24,7 +24,7 @@
 #define Y_STP       3 
 #define Z_STP       4 
 
-#define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation
+#define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation cste
 
 
 float angleAbsolute = 0.;
@@ -50,10 +50,10 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
 
 float fitToSteps (float angleDeg) {
 
-  int angleInt = round (angleDeg * 100000);
+  int64_t angleInt = round (angleDeg * 100000);
   float remainder = angleInt % 5625; // minimum angle (1/32), * 100000
-
   float angleFit = (angleInt - remainder) / 100000;
+
   return angleFit;
 }
 
@@ -65,7 +65,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
   Serial.print("Stepping "); Serial.print(angleFit); Serial.print(" deg / "); Serial.print(angleDeg); Serial.println(" deg.");
 
   // Step command
-  int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed
+  int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed     
   step (dir, dirPin, stepperPin, microsteps, delayTime);
 
   // Add sign
@@ -91,19 +91,6 @@ void setup(){
 }
 
 
-<<<<<<< HEAD
-//   step(false, X_DIR, X_STP, stps/4); //X, Clockwise
-//   step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
-//   step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
-
-//   delay(100);
-
-//   step(true, X_DIR, X_STP, stps); //X, Counterclockwise
-//   step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
-//   step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
-
-//   delay(100);
-=======
 
 
 
@@ -113,22 +100,10 @@ void loop() {
   // float angleCommand = 0.;
 
   for (int i = 0; i < 200; i ++) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 10, 100);
+    // angleAbsolute += stepAngle (false, X_DIR, X_STP, 120, 100);
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   for (int i = 0; i < 200; i ++) {
@@ -164,6 +139,5 @@ void loop() {
 
   // delay(100);
   
->>>>>>> 8e9425d7e2ebbc2f8e75f0875428a0cfd879ab78
 
 }
