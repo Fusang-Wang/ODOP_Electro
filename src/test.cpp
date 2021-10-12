@@ -62,7 +62,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
-  Serial.print("Stepping "); Serial.print(angleFit); Serial.print(" deg / "); Serial.print(angleDeg); Serial.println(" deg.");
+  Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
 
   // Step command
   int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed     
@@ -96,10 +96,10 @@ void setup(){
 
 void loop() {
 
-
   // float angleCommand = 0.;
 
   for (int i = 0; i < 200; i ++) {
+<<<<<<< HEAD
     // angleAbsolute += stepAngle (false, X_DIR, X_STP, 120, 100);
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
@@ -120,24 +120,18 @@ void loop() {
     // Serial.println (" deg");
 
     // delay(500);
+=======
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100);
+    // float error = angleCommand - angleAbsolute;
+    // Serial.println(error);
+    delay(1000);
+>>>>>>> 0a2975b50eba1f22c46208a40f8aa3ac5da70773
   }
 
   delay (3000);
-  
-  
-  
-
-  // step(false, X_DIR, X_STP, stps/4); //X, Clockwise
-  // step(false, Y_DIR, Y_STP, stps); //Y, Clockwise
-  // step(false, Z_DIR, Z_STP, stps); //Z, Clockwise
-
-  // delay(100);
-
-  // step(true, X_DIR, X_STP, stps*4); //X, Counterclockwise
-  // step(true, Y_DIR, Y_STP, stps); //Y, Counterclockwise
-  // step(true, Z_DIR, Z_STP, stps); //X, Counterclockwise
-
-  // delay(100);
-  
 
 }
+
+
+// Stepping 119.981246 deg / 120.000000 deg.
+
