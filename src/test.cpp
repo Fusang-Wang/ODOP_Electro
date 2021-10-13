@@ -102,18 +102,47 @@ void setup(){
 
 void loop() {
 
+  Serial.println(); Serial.println("========== NEW LOOP ==========");
+
+  x_lim = digitalRead (X_LIM); // needed?
+  // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
+
   // float angleCommand = 0.;
 
-  // Serial.print("X_LIM: "); Serial.println(x_lim);
-  x_lim = digitalRead (X_LIM);
-  if (x_lim != 0) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 36, 100); // 44RPM
+
+  // Calibration
+  boolean calibrate = false; // Will be an instruction read from a string
+  if (calibrate == true) {
+
+    // Find motion range start (the while loop terminates)
+    int iter = 0;
+    while (x_lim != 0) {
+
+      x_lim = digitalRead (X_LIM);
+      angleAbsolute += stepAngle (false, X_DIR, X_STP, 1.8, 100); // 44RPM
+
+      if (iter > 100) { break; }
+      iter ++;
+    }
+
+    if (iter <= 100) {
+      Serial.println("motion range start found");
+      angleAbsolute = -15.; // Reset absolute angle
+    } else {
+      Serial.println("ERROR: exceeded iterations");
+    }
+
   }
 
 
+  // Stepping
+  boolean step = true;
+  if (step == true) {
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+  }
 
-  // X endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
-  
+
+  // delay(3000);
 
   // for (int i = 0; i < 200; i ++) {
   //   // angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
@@ -121,8 +150,6 @@ void loop() {
   //   // Serial.println(error);
   //   delay(100);
   // }
-
-  delay (100);
 
 }
 
