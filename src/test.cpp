@@ -99,33 +99,10 @@ void loop() {
   // float angleCommand = 0.;
 
   for (int i = 0; i < 200; i ++) {
-<<<<<<< HEAD
-    // angleAbsolute += stepAngle (false, X_DIR, X_STP, 120, 100);
-    // float error = angleCommand - angleAbsolute;
-    // Serial.println(error);
-  }
-
-
-  for (int i = 0; i < 200; i ++) {
-    // stepAngle (false, X_DIR, X_STP, 360, 20000);  // 10 steps
-    // stepAngle (false, X_DIR, X_STP, 1.8, 500);  // full step
-    // stepAngle (false, X_DIR, X_STP, 0.9, 200);  // 1/2 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.45, 100);  // 1/4 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.225, 100);  // 1/8 microstep
-    // stepAngle (false, X_DIR, X_STP, 0.1125, 100);  // 1/16 microstep >> resolution = 0.1125deg
-    // stepAngle (false, X_DIR, X_STP, 0.05625, 100);  // 1/32 microstep (not possible)
-
-    // Serial.print ("Angle: ");
-    // Serial.print (absoluteAngle);
-    // Serial.println (" deg");
-
-    // delay(500);
-=======
     angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100);
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
     delay(1000);
->>>>>>> 0a2975b50eba1f22c46208a40f8aa3ac5da70773
   }
 
   delay (3000);
