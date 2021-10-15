@@ -177,13 +177,16 @@ void loop() {
     else { dirBool = false; }
     
     while (true) {
+      angleAbsolute = checkEndStops ()
+
+
       angleAbsolute += stepAngle (dirBool, X_DIR, X_STP, baseAngle, 100); // 44RPM
       float error = angleCommand - angleAbsolute;
 
 
     }
 
-    angleAbsolute = checkEndStops ()
+    
 
     // Loop with error correction
     // for ()
