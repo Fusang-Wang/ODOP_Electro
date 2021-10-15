@@ -184,7 +184,7 @@ void loop() {
     // Calculate target angle after task completion
     float angleTarget = angleAbsolute + angleCommand;
 
-    while (true) {
+    while (true) { // DEFINE LOOP
 
       if (checkEndStops()) {
         angleAbsolute = updatePosition();
@@ -194,6 +194,7 @@ void loop() {
       }
       
       //float error = abs(angleTarget - angleAbsolute);
+      // QUANTIFY ANGLE LEFT TO MOVE FOR
     }
 
     // return confirmation
