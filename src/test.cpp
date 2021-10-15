@@ -10,8 +10,6 @@
 
 #include <AccelStepper.h>
 #include <math.h>
-#include <Utility.h>
-
 
 // Define some steppers and the pins the will use
 #define EN          8  
@@ -31,14 +29,9 @@
 #define Y_LIM       10
 #define Z_LIM       11
 
-<<<<<<< HEAD
-#define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation cste
-
-=======
 #define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation
 #define ANGLE_MIN   -15.
 #define ANGLE_MAX   90.
->>>>>>> f2b9c873ba7619b4b1856128b1b88e9fe9b5a918
 
 float angleAbsolute = 0.;
 int x_lim = 0;
@@ -75,14 +68,7 @@ float fitToSteps (float angleDeg) {
 }
 
 
-float stepAngle (byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
-
-  // Unpack angleDeg
-  boolean dir;
-  int direction = sign(angleDeg);
-  if (direction >= 0) { dir = true; }
-  else { dir = false; }
-  angleDeg = abs(angleDeg);
+float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
@@ -100,25 +86,19 @@ float stepAngle (byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
 /**
  * Check whether end stop is reached and return angleAbsolute value (given context)
  */
-float updatePosition () {
+float checkEndStops () {
   x_lim = digitalRead (X_LIM);
 
-  if (checkEndStops()) {
+  if (x_lim == 0) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
-      return ANGLE_MAX; // +90 end stop
+      // +90 end stop
+      return ANGLE_MAX;
     } else {
-      return ANGLE_MIN; // -15 end stop
+      // -15 end stop
+      return ANGLE_MIN;
     }
-  } else {
-    return angleAbsolute;
   }
-}
-
-
-boolean checkEndStops () {
-  x_lim = digitalRead (X_LIM);
-  if (x_lim == 0) { return true; }
-  else { return false; }
+   
 }
 
 
@@ -159,7 +139,7 @@ void loop() {
     while (x_lim != 0) {
 
       x_lim = digitalRead (X_LIM);
-      angleAbsolute += stepAngle (X_DIR, X_STP, 1.8, 100); // 44RPM
+      angleAbsolute += stepAngle (false, X_DIR, X_STP, 1.8, 100); // 44RPM
 
       if (iter > 100) { break; }
       iter ++;
@@ -177,39 +157,37 @@ void loop() {
 
   // Stepping (obsolete)
   if (command.startsWith("step")) {
-    angleAbsolute += stepAngle (X_DIR, X_STP, 0.45, 100); // 44RPM
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
   }
 
   // Angle
-  if (command.startsWith("angle 1.12")) {
+  if (command.startsWith("angle ")) {
 
-    // Extract angular command
-    float angleCommand = command.substring(5).toFloat();
+    float cmdAngle = command.substring(5).toFloat();
+    float iterNb = floor(cmdAngle / baseAngle); // + reste
 
-    // Calculate target angle after task completion
-    float angleTarget = angleAbsolute + angleCommand;
+    
+    // while (true) {
+    //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
+    //   float error = angleCommand - angleAbsolute;
+    // }
 
-    while (true) { // DEFINE LOOP
+    
 
-      if (checkEndStops()) {
-        angleAbsolute = updatePosition();
-        break; // return error message
-      } else {
-        angleAbsolute += stepAngle (X_DIR, X_STP, baseAngle, 100); // 44RPM
-      }
-      
-      //float error = abs(angleTarget - angleAbsolute);
-      // QUANTIFY ANGLE LEFT TO MOVE FOR
-    }
+    // Loop with error correction
+    // for ()
+    //   angle 1°
+    //   check END STOP
+    // decompose and loop with one ENDSTOP verification each run
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
 
-    // return confirmation
   }
 
 
   // delay(3000);
 
   // for (int i = 0; i < 200; i ++) {
-  //   // angleAbsolute += stepAngle (X_DIR, X_STP, 360, 100); // 44RPM
+  //   // angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
   //   // float error = angleCommand - angleAbsolute;
   //   // Serial.println(error);
   //   delay(100);
