@@ -10,6 +10,8 @@
 
 #include <AccelStepper.h>
 #include <math.h>
+#include <Utility.h>
+
 
 // Define some steppers and the pins the will use
 #define EN          8  
@@ -86,17 +88,19 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 /**
  * Check whether end stop is reached and return angleAbsolute value (given context)
  */
-void checkEndStops () {
+float checkEndStops () {
   x_lim = digitalRead (X_LIM);
 
   if (x_lim == 0) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
-      // +90 end stop
-      //return ANGLE_MAX;
+      +90 end stop
+      return ANGLE_MAX;
     } else {
-      // -15 end stop
-      //return ANGLE_MIN;
+      -15 end stop
+      return ANGLE_MIN;
     }
+  } else {
+    return angleAbsolute;
   }
 }
 
@@ -162,16 +166,26 @@ void loop() {
   // Angle
   if (command.startsWith("angle ")) {
 
-    float cmdAngle = command.substring(5).toFloat();
-    float iterNb = floor(cmdAngle / baseAngle); // + reste
+    // Extract angular command
+    float angleCommand = command.substring(5).toFloat();
 
-    
-    // while (true) {
-    //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
-    //   float error = angleCommand - angleAbsolute;
-    // }
+    // Calculate target angle after task completion
+    float angleTarget = angleAbsolute + angleCommand;
 
+    // Calculate direction of motion
+    boolean dirBool;
+    int direction = sign(angleCommand);
+    if (direction >= 0) { dirBool = true; }
+    else { dirBool = false; }
     
+    while (true) {
+      angleAbsolute += stepAngle (dirBool, X_DIR, X_STP, baseAngle, 100); // 44RPM
+      float error = angleCommand - angleAbsolute;
+
+
+    }
+
+    angleAbsolute = checkEndStops ()
 
     // Loop with error correction
     // for ()
