@@ -42,6 +42,9 @@ float angleAbsolute = 0.;
 int x_lim = 0;
 
 
+float baseAngle = 0.45; // Smallest angle for decomposition of large angular commands
+
+
 void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) {
 
   // Set rotation direction
@@ -88,22 +91,22 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 /**
  * Check whether end stop is reached and return angleAbsolute value (given context)
  */
-float checkEndStops () {
+void checkEndStops () {
   x_lim = digitalRead (X_LIM);
 
   if (x_lim == 0) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
       // +90 end stop
-      return ANGLE_MAX;
+      //return ANGLE_MAX;
     } else {
       // -15 end stop
-      return ANGLE_MIN;
+      //return ANGLE_MIN;
     }
   }
 }
 
 
-void setup(){
+void setup() {
 
   Serial.begin(9600);
 
@@ -123,13 +126,14 @@ void setup(){
 void loop() {
 
   // Hard-coded command (will be received from SERIAL)
-  String command = "step"; // calibrate, step, …
+  String command = "calibrate"; // calibrate, step, …
   
   Serial.println(); Serial.println("========== NEW LOOP ==========");
 
   x_lim = digitalRead (X_LIM); // needed?
   // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
-
+  
+  Serial.println(100 / baseAngle);
 
   // Calibration
   if (command.startsWith("calibrate")) {
@@ -161,11 +165,23 @@ void loop() {
   }
 
   // Angle
-  if (command.startsWith("angle 100.")) {
+  if (command.startsWith("angle ")) {
+
     float cmdAngle = command.substring(5).toFloat();
-    for ()
-      angle 1°
-      check END STOP
+    float iterNb = floor(cmdAngle / baseAngle); // + reste
+
+    
+    // while (true) {
+    //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
+    //   float error = angleCommand - angleAbsolute;
+    // }
+
+    
+
+    // Loop with error correction
+    // for ()
+    //   angle 1°
+    //   check END STOP
     // decompose and loop with one ENDSTOP verification each run
     angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
 
