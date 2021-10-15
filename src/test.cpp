@@ -70,7 +70,14 @@ float fitToSteps (float angleDeg) {
 }
 
 
-float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
+float stepAngle (byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
+
+  // Unpack angleDeg
+  boolean dir;
+  int direction = sign(angleDeg);
+  if (direction >= 0) { dir = true; }
+  else { dir = false; }
+  angleDeg = abs(angleDeg);
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
@@ -88,10 +95,10 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 /**
  * Check whether end stop is reached and return angleAbsolute value (given context)
  */
-float checkEndStops () {
+float updatePosition () {
   x_lim = digitalRead (X_LIM);
 
-  if (x_lim == 0) {
+  if (checkEndStops()) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
       return ANGLE_MAX; // +90 end stop
     } else {
@@ -100,6 +107,13 @@ float checkEndStops () {
   } else {
     return angleAbsolute;
   }
+}
+
+
+boolean checkEndStops () {
+  x_lim = digitalRead (X_LIM);
+  if (x_lim == 0) { return true; }
+  else { return false; }
 }
 
 
@@ -140,7 +154,7 @@ void loop() {
     while (x_lim != 0) {
 
       x_lim = digitalRead (X_LIM);
-      angleAbsolute += stepAngle (false, X_DIR, X_STP, 1.8, 100); // 44RPM
+      angleAbsolute += stepAngle (X_DIR, X_STP, 1.8, 100); // 44RPM
 
       if (iter > 100) { break; }
       iter ++;
@@ -158,11 +172,11 @@ void loop() {
 
   // Stepping (obsolete)
   if (command.startsWith("step")) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+    angleAbsolute += stepAngle (X_DIR, X_STP, 0.45, 100); // 44RPM
   }
 
   // Angle
-  if (command.startsWith("angle ")) {
+  if (command.startsWith("angle 1.12")) {
 
     // Extract angular command
     float angleCommand = command.substring(5).toFloat();
@@ -170,38 +184,26 @@ void loop() {
     // Calculate target angle after task completion
     float angleTarget = angleAbsolute + angleCommand;
 
-    // Calculate direction of motion
-    boolean dirBool;
-    int direction = sign(angleCommand);
-    if (direction >= 0) { dirBool = true; }
-    else { dirBool = false; }
-    
     while (true) {
-      angleAbsolute = checkEndStops ()
 
-
-      angleAbsolute += stepAngle (dirBool, X_DIR, X_STP, baseAngle, 100); // 44RPM
-      float error = angleCommand - angleAbsolute;
-
-
+      if (checkEndStops()) {
+        angleAbsolute = updatePosition();
+        break; // return error message
+      } else {
+        angleAbsolute += stepAngle (X_DIR, X_STP, baseAngle, 100); // 44RPM
+      }
+      
+      //float error = abs(angleTarget - angleAbsolute);
     }
 
-    
-
-    // Loop with error correction
-    // for ()
-    //   angle 1°
-    //   check END STOP
-    // decompose and loop with one ENDSTOP verification each run
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
-
+    // return confirmation
   }
 
 
   // delay(3000);
 
   // for (int i = 0; i < 200; i ++) {
-  //   // angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
+  //   // angleAbsolute += stepAngle (X_DIR, X_STP, 360, 100); // 44RPM
   //   // float error = angleCommand - angleAbsolute;
   //   // Serial.println(error);
   //   delay(100);
