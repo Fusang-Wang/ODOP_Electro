@@ -93,11 +93,9 @@ float checkEndStops () {
 
   if (x_lim == 0) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
-      +90 end stop
-      return ANGLE_MAX;
+      return ANGLE_MAX; // +90 end stop
     } else {
-      -15 end stop
-      return ANGLE_MIN;
+      return ANGLE_MIN; // -15 end stop
     }
   } else {
     return angleAbsolute;
