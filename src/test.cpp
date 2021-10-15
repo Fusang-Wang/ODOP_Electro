@@ -33,13 +33,13 @@
 #define ANGLE_MIN   -15.
 #define ANGLE_MAX   90.
 
-float angleAbsolute = 0.;
+float angleAbsolute = 0.; //range [ANGLE_MIN, ANGLE_MAX]
 int x_lim = 0;
 
 
 float baseAngle = 0.45; // Smallest angle for decomposition of large angular commands
 
-
+// stepper layer
 void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) {
 
   // Set rotation direction
@@ -57,7 +57,7 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
   }
 }
 
-
+// communication ordinateur - stepper
 float fitToSteps (float angleDeg) {
 
   int64_t angleInt = round (angleDeg * 100000);
@@ -67,7 +67,7 @@ float fitToSteps (float angleDeg) {
   return angleFit;
 }
 
-
+// move angleDeg and return actual angle moved by motor
 float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
 
   // 'fit' into base 1.8
@@ -80,7 +80,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 
   // Add sign
   if (dir == true) { angleFit *= -1.; };
-  return angleFit; // return actual angle
+  return angleFit; // return actual angle moved
 }
 
 /**
