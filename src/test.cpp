@@ -29,8 +29,14 @@
 #define Y_LIM       10
 #define Z_LIM       11
 
+<<<<<<< HEAD
 #define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation cste
 
+=======
+#define MICROSTEPS_FULL  6400  // Number of microsteps in a full rotation
+#define ANGLE_MIN   -15.
+#define ANGLE_MAX   90.
+>>>>>>> f2b9c873ba7619b4b1856128b1b88e9fe9b5a918
 
 float angleAbsolute = 0.;
 int x_lim = 0;
@@ -45,10 +51,10 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
 
     // Run one 1/32 microstep unit
     digitalWrite(stepperPin, HIGH);
-    delayMicroseconds(delayTime); 
+    delayMicroseconds(delayTime);
 
     digitalWrite(stepperPin, LOW);
-    delayMicroseconds(delayTime); 
+    delayMicroseconds(delayTime);
 
   }
 }
@@ -79,8 +85,22 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
   return angleFit; // return actual angle
 }
 
+/**
+ * Check whether end stop is reached and return angleAbsolute value (given context)
+ */
+float checkEndStops () {
+  x_lim = digitalRead (X_LIM);
 
-
+  if (x_lim == 0) {
+    if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
+      // +90 end stop
+      return ANGLE_MAX;
+    } else {
+      // -15 end stop
+      return ANGLE_MIN;
+    }
+  }
+}
 
 
 void setup(){
@@ -102,17 +122,17 @@ void setup(){
 
 void loop() {
 
+  // Hard-coded command (will be received from SERIAL)
+  String command = "step"; // calibrate, step, …
+  
   Serial.println(); Serial.println("========== NEW LOOP ==========");
 
   x_lim = digitalRead (X_LIM); // needed?
   // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
 
-  // float angleCommand = 0.;
-
 
   // Calibration
-  boolean calibrate = false; // Will be an instruction read from a string
-  if (calibrate == true) {
+  if (command.startsWith("calibrate")) {
 
     // Find motion range start (the while loop terminates)
     int iter = 0;
@@ -135,10 +155,20 @@ void loop() {
   }
 
 
-  // Stepping
-  boolean step = true;
-  if (step == true) {
+  // Stepping (obsolete)
+  if (command.startsWith("step")) {
     angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+  }
+
+  // Angle
+  if (command.startsWith("angle 100.")) {
+    float cmdAngle = command.substring(5).toFloat();
+    for ()
+      angle 1°
+      check END STOP
+    // decompose and loop with one ENDSTOP verification each run
+    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+
   }
 
 
