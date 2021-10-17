@@ -72,7 +72,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
-  Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
+  // Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
 
   // Step command
   int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed     
@@ -80,6 +80,7 @@ float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int 
 
   // Add sign
   if (dir == true) { angleFit *= -1.; };
+  // angleAbsolute += angleFit;
   return angleFit; // return actual angle moved
 }
 
@@ -105,6 +106,7 @@ float checkEndStops () {
 void setup() {
 
   Serial.begin(9600);
+  while(Serial.available() >= 0){}//clear serialbuffer
 
   pinMode(X_DIR, OUTPUT); pinMode(X_STP, OUTPUT); pinMode(X_LIM, INPUT);
   pinMode(Y_DIR, OUTPUT); pinMode(Y_STP, OUTPUT); pinMode(Y_LIM, INPUT);
@@ -118,70 +120,79 @@ void setup() {
 
 
 
+char comchar;
 
 void loop() {
+  if (Serial.available() > 0){
+    delay(100);
+    comchar = Serial.read();
+    Serial.print('Serial.read:');
+    Serial.print(comchar);
 
-  // Hard-coded command (will be received from SERIAL)
-  String command = "calibrate"; // calibrate, step, …
-  
-  Serial.println(); Serial.println("========== NEW LOOP ==========");
-
-  x_lim = digitalRead (X_LIM); // needed?
-  // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
-  
-  Serial.println(100 / baseAngle);
-
-  // Calibration
-  if (command.startsWith("calibrate")) {
-
-    // Find motion range start (the while loop terminates)
-    int iter = 0;
-    while (x_lim != 0) {
-
-      x_lim = digitalRead (X_LIM);
-      angleAbsolute += stepAngle (false, X_DIR, X_STP, 1.8, 100); // 44RPM
-
-      if (iter > 100) { break; }
-      iter ++;
-    }
-
-    if (iter <= 100) {
-      Serial.println("motion range start found");
-      angleAbsolute = -15.; // Reset absolute angle
-    } else {
-      Serial.println("ERROR: exceeded iterations");
-    }
 
   }
 
+  // // Hard-coded command (will be received from SERIAL)
+  // String command = "calibrate"; // calibrate, step, …
+  
+  // Serial.println(); Serial.println("========== NEW LOOP ==========");
 
-  // Stepping (obsolete)
-  if (command.startsWith("step")) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
-  }
+  // x_lim = digitalRead (X_LIM); // needed?
+  // // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
+  
+  // Serial.println(100 / baseAngle);
 
-  // Angle
-  if (command.startsWith("angle ")) {
+  // // Calibration
+  // if (command.startsWith("calibrate")) {
 
-    float cmdAngle = command.substring(5).toFloat();
-    float iterNb = floor(cmdAngle / baseAngle); // + reste
+  //   // Find motion range start (the while loop terminates)
+  //   int iter = 0;
+  //   while (x_lim != 0) {
+
+  //     x_lim = digitalRead (X_LIM);
+  //     angleAbsolute += stepAngle (false, X_DIR, X_STP, 1.8, 100); // 44RPM
+
+  //     if (iter > 100) { break; }
+  //     iter ++;
+  //   }
+
+  //   if (iter <= 100) {
+  //     Serial.println("motion range start found");
+  //     angleAbsolute = -15.; // Reset absolute angle
+  //   } else {
+  //     Serial.println("ERROR: exceeded iterations");
+  //   }
+
+  // }
+
+
+  // // Stepping (obsolete)
+  // if (command.startsWith("step")) {
+  //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+  // }
+
+  // // Angle
+  // if (command.startsWith("angle ")) {
+
+  //   float cmdAngle = command.substring(5).toFloat();
+  //   float iterNb = floor(cmdAngle / baseAngle); // + reste
 
     
-    // while (true) {
-    //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
-    //   float error = angleCommand - angleAbsolute;
-    // }
+  //   // while (true) {
+  //   //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
+  //   //   float error = angleCommand - angleAbsolute;
+  //   // }
 
     
 
-    // Loop with error correction
-    // for ()
-    //   angle 1°
-    //   check END STOP
-    // decompose and loop with one ENDSTOP verification each run
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+  //   // Loop with error correction
+  //   // for ()
+  //   //   angle 1°
+  //   //   check END STOP
+  //   // decompose and loop with one ENDSTOP verification each run
+  //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
 
-  }
+  // }
 
 
   // delay(3000);
