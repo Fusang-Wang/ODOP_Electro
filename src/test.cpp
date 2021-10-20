@@ -10,6 +10,8 @@
 
 #include <AccelStepper.h>
 #include <math.h>
+//#include <Utility.h>
+
 
 // Define some steppers and the pins the will use
 #define EN          8  
@@ -33,13 +35,13 @@
 #define ANGLE_MIN   -15.
 #define ANGLE_MAX   90.
 
-float angleAbsolute = 0.; //range [ANGLE_MIN, ANGLE_MAX]
+float angleAbsolute = 0.;
 int x_lim = 0;
 
 
 float baseAngle = 0.45; // Smallest angle for decomposition of large angular commands
 
-// stepper layer - communication driver
+
 void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) {
 
   // Set rotation direction
@@ -57,56 +59,76 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
   }
 }
 
-// communication angle - stepper, return actual angle moved
+int sign(float number){
+  if (number > 0){
+    return 1;
+  }
+  else {
+    return -1;
+  }
+}
+
+
 float fitToSteps (float angleDeg) {
 
   int64_t angleInt = round (angleDeg * 100000);
   float remainder = angleInt % 5625; // minimum angle (1/32), * 100000
-  float angleFit = (angleInt - remainder) / 100000;
 
+  float angleFit = (angleInt - remainder) / 100000;
   return angleFit;
 }
 
-// move angleDeg and return actual angle moved by motor
-float stepAngle (boolean dir, byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
+
+float stepAngle (byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
+
+  // Unpack angleDeg
+  boolean dir;
+  int direction = sign(angleDeg);
+  if (direction >= 0) { dir = true; }
+  else { dir = false; }
+  angleDeg = abs(angleDeg);
 
   // 'fit' into base 1.8
   float angleFit = fitToSteps (angleDeg);
-  // Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
+  Serial.print("Stepping "); Serial.print(angleFit, 6); Serial.print(" deg / "); Serial.print(angleDeg, 6); Serial.println(" deg.");
 
   // Step command
-  int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed     
+  int microsteps = round (angleFit / 360 * MICROSTEPS_FULL);  // round shouldn't be needed
   step (dir, dirPin, stepperPin, microsteps, delayTime);
 
   // Add sign
   if (dir == true) { angleFit *= -1.; };
-  // angleAbsolute += angleFit;
-  return angleFit; // return actual angle moved
+  return angleFit; // return actual angle
 }
 
 /**
  * Check whether end stop is reached and return angleAbsolute value (given context)
  */
-float checkEndStops () {
+
+boolean checkEndStops () {
+  x_lim = digitalRead (X_LIM);
+  if (x_lim == 0) { return true; }
+  else { return false; }
+}
+
+float updatePosition () {
   x_lim = digitalRead (X_LIM);
 
-  if (x_lim == 0) {
+  if (checkEndStops()) {
     if ((angleAbsolute - ANGLE_MIN) > (ANGLE_MAX - angleAbsolute)) {
-      // +90 end stop
-      return ANGLE_MAX;
+      return ANGLE_MAX; // +90 end stop
     } else {
-      // -15 end stop
-      return ANGLE_MIN;
+      return ANGLE_MIN; // -15 end stop
     }
+  } else {
+    return angleAbsolute;
   }
-   
 }
 
 
 void setup() {
 
   Serial.begin(9600);
-  while(Serial.available() >= 0){}//clear serialbuffer
 
   pinMode(X_DIR, OUTPUT); pinMode(X_STP, OUTPUT); pinMode(X_LIM, INPUT);
   pinMode(Y_DIR, OUTPUT); pinMode(Y_STP, OUTPUT); pinMode(Y_LIM, INPUT);
@@ -120,7 +142,6 @@ void setup() {
 
 
 
-char comchar;
 
 void loop() {
 
@@ -130,10 +151,11 @@ void loop() {
   Serial.println(); Serial.println("========== NEW LOOP ==========");
 
   x_lim = digitalRead (X_LIM); // needed?
-  Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
+  // Serial.print("X_LIM: "); Serial.println(x_lim); // Endstop switch (0 when depressed, for both X- and X+; 1 when pressed)
   
-  // Serial.println(100 / baseAngle);
+  Serial.println(100 / baseAngle);
 
+// ###############################################################################
   // Calibration
   if (command.startsWith("calibrate")) {
 
@@ -142,7 +164,7 @@ void loop() {
     while (x_lim != 0) {
 
       x_lim = digitalRead (X_LIM);
-      angleAbsolute += stepAngle (false, X_DIR, X_STP, baseAngle*4 , 100); // 44RPM
+      angleAbsolute += stepAngle (Y_DIR, Y_STP, 1.8, 100); // 44RPM
 
       if (iter > 100) { break; }
       iter ++;
@@ -150,50 +172,53 @@ void loop() {
 
     if (iter <= 100) {
       Serial.println("motion range start found");
-      angleAbsolute = checkEndStops (); // Reset absolute angle
-    } 
-    else {
+      angleAbsolute = -15.; // Reset absolute angle
+    } else {
       Serial.println("ERROR: exceeded iterations");
     }
 
   }
 
+// ############################################################
+
   // Stepping (obsolete)
   if (command.startsWith("step")) {
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+    angleAbsolute += stepAngle (X_DIR, X_STP, 0.45, 100); // 44RPM
   }
 
   // Angle
-  if (command.startsWith("angle ")) {
+  if (command.startsWith("angle 1.12")) {
 
-    float cmdAngle = command.substring(5).toFloat();
-    float iterNb = floor(cmdAngle / baseAngle); // + reste
+    // Extract angular command
+    float angleCommand = command.substring(5).toFloat();
 
-    
-    // while (true) {
-    //   angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
-    //   float error = angleCommand - angleAbsolute;
-    // }
+    // Calculate target angle after task completion
+    float angleTarget = angleAbsolute + angleCommand;
 
-    
+    while (true) { // DEFINE LOOP
 
-    // Loop with error correction
-    // for ()
-    //   angle 1°
-    //   check END STOP
-    // decompose and loop with one ENDSTOP verification each run
-    angleAbsolute += stepAngle (false, X_DIR, X_STP, 0.45, 100); // 44RPM
+      if (checkEndStops()) {
+        angleAbsolute = updatePosition();
+        break; // return error message
+      } else {
+        angleAbsolute += stepAngle (X_DIR, X_STP, baseAngle, 100); // 44RPM
+      }
+      
+      //float error = abs(angleTarget - angleAbsolute);
+      // QUANTIFY ANGLE LEFT TO MOVE FOR
+    }
 
+    // return confirmation
   }
 
 
   delay(3000);
 
   for (int i = 0; i < 200; i ++) {
-    // angleAbsolute += stepAngle (false, X_DIR, X_STP, 360, 100); // 44RPM
+    // angleAbsolute += stepAngle (X_DIR, X_STP, 360, 100); // 44RPM
     // float error = angleCommand - angleAbsolute;
     // Serial.println(error);
-    delay(100);
+    // delay(100);
   }
 
 }
