@@ -41,6 +41,7 @@ int x_lim = 0;
 
 float baseAngle = 0.45; // Smallest angle for decomposition of large angular commands
 
+// #############################################################################
 
 void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) {
 
@@ -59,16 +60,6 @@ void step (boolean dir, byte dirPin, byte stepperPin, int steps, int delayTime) 
   }
 }
 
-int sign(float number){
-  if (number > 0){
-    return 1;
-  }
-  else {
-    return -1;
-  }
-}
-
-
 float fitToSteps (float angleDeg) {
 
   int64_t angleInt = round (angleDeg * 100000);
@@ -78,14 +69,30 @@ float fitToSteps (float angleDeg) {
   return angleFit;
 }
 
+// ###########################################################################
+
+int sign(float number){
+  if (number > 0){
+    return 1;
+  }
+  else {
+    return -1;
+  }
+}
+
+boolean dirAngle(float angleDeg){
+  int direction = sign(angleDeg);
+  if (direction >= 0) { return true; }
+  else { return false; }
+}
+
+//##########################################################################
 
 float stepAngle (byte dirPin, byte stepperPin, float angleDeg, int delayTime) {
 
   // Unpack angleDeg
   boolean dir;
-  int direction = sign(angleDeg);
-  if (direction >= 0) { dir = true; }
-  else { dir = false; }
+  dir = dirAngle(angleDeg);
   angleDeg = abs(angleDeg);
 
   // 'fit' into base 1.8
@@ -164,8 +171,9 @@ void loop() {
     while (x_lim != 0) {
 
       x_lim = digitalRead (X_LIM);
-      angleAbsolute += stepAngle (Y_DIR, Y_STP, 1.8, 100); // 44RPM
-
+      angleAbsolute += stepAngle (X_DIR, X_STP, 18, 100); // 44RPM
+      // angleAbsolute += stepAngle (Y_DIR, Y_STP, 18, 100); // 44RPM
+      // angleAbsolute += stepAngle (Z_DIR, Z_STP, 18, 100); // 44RPM
       if (iter > 100) { break; }
       iter ++;
     }
